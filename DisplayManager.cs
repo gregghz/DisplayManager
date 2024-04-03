@@ -5,11 +5,9 @@ namespace Gregghz.DisplayManager;
 
 static class DisplayManager
 {
-  public static uint[] GetInfo()
+  public static void GetInfo()
   {
     string MonitorInfo = "";
-    uint[] monitors = new uint[3]; // @TODO: make this not static
-    int i = 0;
 
     bool MonitorEnum(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData)
     {
@@ -22,14 +20,12 @@ static class DisplayManager
 
       MonitorInfo += $"Monitor: {deviceName} ({hMonitor}) - Bounds: {mi.rcMonitor.left}, {mi.rcMonitor.top}, {mi.rcMonitor.right}, {mi.rcMonitor.bottom}\n";
       MonitorInfo += $"\t{mode}\n\n";
-      monitors[i++] = (uint)hMonitor;
       return true; // Continue enumeration
     }
 
     User32.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, MonitorEnum, IntPtr.Zero);
 
     Console.WriteLine(MonitorInfo);
-    return monitors;
   }
 
   public static int UpdateSettings(string deviceName, Settings settings)
