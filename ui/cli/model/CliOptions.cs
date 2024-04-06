@@ -1,4 +1,4 @@
-namespace Gregghz.DisplayManager.Model;
+namespace Gregghz.DisplayManager.UI.Cli.Model;
 
 using CommandLine;
 

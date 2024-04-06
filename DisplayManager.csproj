@@ -1,15 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>Gregghz.DisplayManager</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <UseWPF>true</UseWPF>
+        <RootNamespace>Gregghz.DisplayManager</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.9.1" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="CommandLineParser" Version="2.9.1"/>
+        <PackageReference Include="ModernWpfUI" Version="0.9.6"/>
+    </ItemGroup>
 
 </Project>

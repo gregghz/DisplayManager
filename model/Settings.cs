@@ -1,11 +1,9 @@
-using System.ComponentModel.Design;
-using System.Runtime.InteropServices;
 using Gregghz.DisplayManager.Native;
 
 namespace Gregghz.DisplayManager.Model;
 
 public record Settings(
-  string Name,
+  string DeviceId,
   bool IsPrimary,
   Position Position,
   Resolution Resolution,
@@ -13,15 +11,18 @@ public record Settings(
   uint Frequency
 )
 {
-  public static Settings FromDevMode(string deviceName, in DEVMODE mode)
+  public int RightX => Position.X + Resolution.Width;
+  public int BottomY => Position.Y + Resolution.Height;
+
+  public static Settings FromDevMode(string deviceId, in DEVMODE mode)
   {
     return new Settings(
-      Name: deviceName,
-      IsPrimary: mode.dmPositionX == 0 && mode.dmPositionY == 0,
-      Position: new Position(mode.dmPositionX, mode.dmPositionY),
-      Resolution: new Resolution(mode.dmPelsWidth, mode.dmPelsHeight),
-      Orientation: (Orientation)mode.dmDisplayOrientation,
-      Frequency: (uint)mode.dmDisplayFrequency
+      deviceId,
+      mode.dmPositionX == 0 && mode.dmPositionY == 0,
+      new Position(mode.dmPositionX, mode.dmPositionY),
+      new Resolution(mode.dmPelsWidth, mode.dmPelsHeight),
+      (Orientation)mode.dmDisplayOrientation,
+      (uint)mode.dmDisplayFrequency
     );
   }
 
@@ -46,7 +47,7 @@ public record Settings(
 
     return mode;
   }
-};
+}
 
 public record Position(int X, int Y);
 
