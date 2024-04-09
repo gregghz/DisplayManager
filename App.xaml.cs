@@ -19,7 +19,9 @@ public partial class App
     Directory.CreateDirectory(path);
     var displayManager = new DisplayManager(path);
 
-    if (args.Arguments.Length == 0)
+    var cliArgs = Environment.GetCommandLineArgs();
+
+    if (cliArgs.Length == 0)
     {
       var mainWindow = new MainWindow(displayManager);
       mainWindow.Activate();
@@ -28,7 +30,7 @@ public partial class App
     {
       // cli stuff
       var console = new ConsoleMain(displayManager);
-      console.Run([args.Arguments]);
+      console.Run(cliArgs);
       // Current.Shutdown();
     }
   }
