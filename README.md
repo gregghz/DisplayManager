@@ -22,7 +22,7 @@ From the root directory of this project:
 
     dotnet build
 
-This will create the an executable at `bin\Debug\net8.0\DisplayManager.exe`. Copy that where ever you'd like and optionally add it to your PATH variable.
+This will create the an executable at `DisplayManager.Windows\bin\Debug\net8.0-windows10.0.19041.0\DisplayManager.Windows.exe`. Copy that where ever you'd like and optionally add it to your PATH variable.
 
 ## Usage
 

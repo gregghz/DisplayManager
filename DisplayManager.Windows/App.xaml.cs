@@ -1,8 +1,8 @@
 using Gregghz.DisplayManager.UI.Cli;
-using Gregghz.DisplayManager.Ui.Gui.Views;
+using Gregghz.DisplayManager.Windows.Views;
 using Microsoft.UI.Xaml;
 
-namespace Gregghz.DisplayManager;
+namespace Gregghz.DisplayManager.Windows;
 
 public partial class App
 {
@@ -21,7 +21,7 @@ public partial class App
 
     var cliArgs = Environment.GetCommandLineArgs();
 
-    if (cliArgs.Length == 0)
+    if (cliArgs.Length == 0 || cliArgs[0].EndsWith(".dll"))
     {
       var mainWindow = new MainWindow(displayManager);
       mainWindow.Activate();

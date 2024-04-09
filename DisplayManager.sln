@@ -3,20 +3,26 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisplayManager", "DisplayManager.csproj", "{3BF72B00-C5BE-4D94-A5A4-D4BCD533AAAE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisplayManager", "DisplayManager\DisplayManager.csproj", "{60084F4A-C987-404E-9AA7-1E32274DBF5F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisplayManager.Windows", "DisplayManager.Windows\DisplayManager.Windows.csproj", "{F258E3ED-BCD4-4D19-B65A-4F7965716EF4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Release|x64 = Release|x64
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3BF72B00-C5BE-4D94-A5A4-D4BCD533AAAE}.Debug|x64.ActiveCfg = Debug|x64
-		{3BF72B00-C5BE-4D94-A5A4-D4BCD533AAAE}.Debug|x64.Build.0 = Debug|x64
-		{3BF72B00-C5BE-4D94-A5A4-D4BCD533AAAE}.Release|x64.ActiveCfg = Release|x64
-		{3BF72B00-C5BE-4D94-A5A4-D4BCD533AAAE}.Release|x64.Build.0 = Release|x64
+		{60084F4A-C987-404E-9AA7-1E32274DBF5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60084F4A-C987-404E-9AA7-1E32274DBF5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60084F4A-C987-404E-9AA7-1E32274DBF5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60084F4A-C987-404E-9AA7-1E32274DBF5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F258E3ED-BCD4-4D19-B65A-4F7965716EF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F258E3ED-BCD4-4D19-B65A-4F7965716EF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F258E3ED-BCD4-4D19-B65A-4F7965716EF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F258E3ED-BCD4-4D19-B65A-4F7965716EF4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

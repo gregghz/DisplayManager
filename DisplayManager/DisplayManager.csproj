@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <RootNamespace>Gregghz.DisplayManager</RootNamespace>
+        <TargetFramework>net8.0</TargetFramework>
+        <OutputType>Library</OutputType>
+
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CommandLineParser" Version="2.9.1"/>
+    </ItemGroup>
+
+</Project>

@@ -13,7 +13,7 @@ using WinRT.Interop;
 using Layout = Gregghz.DisplayManager.Model.Layout;
 using Size = Windows.Foundation.Size;
 
-namespace Gregghz.DisplayManager.Ui.Gui.Views;
+namespace Gregghz.DisplayManager.Windows.Views;
 
 /// <summary>
 ///   Interaction logic for MainWindow.xaml
