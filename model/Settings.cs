@@ -13,6 +13,12 @@ public record Settings(
 {
   public int RightX => Position.X + Resolution.Width;
   public int BottomY => Position.Y + Resolution.Height;
+  public string DeviceId { get; set; } = DeviceId;
+  public bool IsPrimary { get; set; } = IsPrimary;
+  public Position Position { get; set; } = Position;
+  public Resolution Resolution { get; set; } = Resolution;
+  public Orientation Orientation { get; set; } = Orientation;
+  public uint Frequency { get; set; } = Frequency;
 
   public static Settings FromDevMode(string deviceId, in DEVMODE mode)
   {
@@ -46,6 +52,17 @@ public record Settings(
     mode.dmDisplayFrequency = (int)Frequency;
 
     return mode;
+  }
+
+  public void Deconstruct(out string DeviceId, out bool IsPrimary, out Position Position, out Resolution Resolution,
+    out Orientation Orientation, out uint Frequency)
+  {
+    DeviceId = this.DeviceId;
+    IsPrimary = this.IsPrimary;
+    Position = this.Position;
+    Resolution = this.Resolution;
+    Orientation = this.Orientation;
+    Frequency = this.Frequency;
   }
 }
 

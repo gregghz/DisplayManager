@@ -1,4 +1,3 @@
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using Gregghz.DisplayManager.Model;
@@ -6,11 +5,21 @@ using Gregghz.DisplayManager.Native;
 
 namespace Gregghz.DisplayManager;
 
-internal static class DisplayManager
+public class DisplayManager(string path)
 {
-  public static void GetInfo()
+  public event EventHandler<IList<string>>? LayoutsUpdated;
+  public event EventHandler<IList<Settings>>? LayoutLoaded;
+
+  public async void FireLayoutUpdated()
   {
-    var MonitorInfo = "";
+    if (LayoutsUpdated is null) return;
+    var layouts = await GetSavedLayouts();
+    LayoutsUpdated.Invoke(this, layouts);
+  }
+
+  public void GetInfo()
+  {
+    var monitorInfo = "";
 
     bool MonitorEnum(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData)
     {
@@ -21,18 +30,18 @@ internal static class DisplayManager
       var mode = new DEVMODE();
       User32.EnumDisplaySettings(deviceName, Constants.ENUM_CURRENT_SETTINGS, ref mode);
 
-      MonitorInfo +=
+      monitorInfo +=
         $"Monitor: {deviceName} ({hMonitor}) - Bounds: {mi.rcMonitor.left}, {mi.rcMonitor.top}, {mi.rcMonitor.right}, {mi.rcMonitor.bottom}\n";
-      MonitorInfo += $"{mode}\r\n\r\n";
+      monitorInfo += $"{mode}\r\n\r\n";
       return true; // Continue enumeration
     }
 
     User32.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, MonitorEnum, IntPtr.Zero);
 
-    Console.WriteLine(MonitorInfo);
+    Console.WriteLine(monitorInfo);
   }
 
-  public static async Task<int> UpdateSettings(string deviceId, Settings settings)
+  public async Task<int> UpdateSettings(string deviceId, Settings settings)
   {
     var deviceMap = GetDeviceMap();
     var deviceName = deviceMap[deviceId]; // @TODO: handle missing ID
@@ -50,7 +59,7 @@ internal static class DisplayManager
     return result;
   }
 
-  public static Layout GetCurrentLayout()
+  public Layout GetCurrentLayout()
   {
     List<Settings> foundSettings = [];
     var deviceMap = GetDeviceMap();
@@ -74,7 +83,7 @@ internal static class DisplayManager
     return new Layout(foundSettings);
   }
 
-  private static IEnumerable<DISPLAY_DEVICE> GetDisplayDevices()
+  private IEnumerable<DISPLAY_DEVICE> GetDisplayDevices()
   {
     var d = new DISPLAY_DEVICE();
     d.cb = Marshal.SizeOf(d);
@@ -92,7 +101,7 @@ internal static class DisplayManager
     return result;
   }
 
-  public static Dictionary<string, string> GetDeviceMap()
+  public Dictionary<string, string> GetDeviceMap()
   {
     var result = new Dictionary<string, string>();
 
@@ -105,7 +114,7 @@ internal static class DisplayManager
     return result;
   }
 
-  public static string GetDeviceName(IntPtr hMonitor)
+  public string GetDeviceName(IntPtr hMonitor)
   {
     var mi = new MONITORINFOEX();
     User32.GetMonitorInfo(hMonitor, mi);
@@ -122,14 +131,20 @@ internal static class DisplayManager
       (IntPtr)null);
   }
 
-  public static Task<IOrderedEnumerable<string>> GetSavedLayouts(string path)
+  public Task<List<string>> GetSavedLayouts()
   {
-    return Task.Run(() => Directory.GetFiles(path, "*.json")
-      .Select(Path.GetFileNameWithoutExtension)
-      .OrderBy(filename => filename))!;
+    return Task.Run(() =>
+    {
+      return Directory.GetFiles(path, "*.json")
+        .Select(Path.GetFileNameWithoutExtension)
+        .Where(s => s != null)
+        .Select(s => s!)
+        .OrderBy(filename => filename)
+        .ToList();
+    });
   }
 
-  public static async Task ApplyConfig(string name, string path)
+  public async Task ApplyConfig(string name)
   {
     try
     {
@@ -152,19 +167,32 @@ internal static class DisplayManager
     }
   }
 
-  public static async Task<IList<Settings>> LoadLayoutSettings(string name, string path)
+  public async Task<IList<Settings>> LoadLayoutSettings(string name)
   {
     var configPath = Path.Combine(path, $"{name}.json");
-    var json = await Task.Run(() => File.ReadAllText(configPath));
-    var settings = JsonSerializer.Deserialize<List<Settings>>(json);
+    try
+    {
+      var json = await Task.Run(() => File.ReadAllText(configPath));
+      var settings = JsonSerializer.Deserialize<List<Settings>>(json);
 
-    if (settings is not null) return settings;
+      if (settings is null)
+      {
+        Console.Error.WriteLine("Failed to parse settings. Try saving your layout again.");
+        settings = [];
+      }
 
-    Console.Error.WriteLine("Failed to parse settings. Try saving your layout again.");
-    return [];
+      LayoutLoaded?.Invoke(this, settings);
+
+      return settings;
+    }
+    catch (FileNotFoundException)
+    {
+      FireLayoutUpdated();
+      return [];
+    }
   }
 
-  public static async Task SaveLayout(string name, string path)
+  public async Task SaveLayout(string name)
   {
     var configPath = Path.Combine(path, $"{name}.json");
 
@@ -174,6 +202,8 @@ internal static class DisplayManager
 
       var data = JsonSerializer.Serialize(currentSettings.Settings);
       await File.WriteAllTextAsync(configPath, data);
+
+      FireLayoutUpdated();
 
       Console.WriteLine($"Current layout saved as {name}.");
     }

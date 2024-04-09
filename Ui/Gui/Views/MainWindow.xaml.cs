@@ -1,84 +1,105 @@
 using System.Collections.ObjectModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Shapes;
+using Windows.Graphics;
 using Gregghz.DisplayManager.Model;
+using Gregghz.DisplayManager.UI.Gui.ViewModels;
+using Gregghz.DisplayManager.UI.Gui.Views.Dialogs;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Shapes;
+using WinRT.Interop;
+using Layout = Gregghz.DisplayManager.Model.Layout;
+using Size = Windows.Foundation.Size;
 
-namespace Gregghz.DisplayManager.UI.Gui;
+namespace Gregghz.DisplayManager.Ui.Gui.Views;
 
 /// <summary>
 ///   Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow
+public partial class MainWindow : Window
 {
-  private readonly Dictionary<string, string> DeviceMap = new();
-  public readonly string Path;
+  private readonly Dictionary<string, string> _deviceMap;
+  private readonly DisplayManager _displayManager;
 
-  public MainWindow(string path)
+  private bool _firstLoad = true;
+
+  public MainWindow(DisplayManager displayManager)
   {
     InitializeComponent();
 
-    Path = path;
-    DataContext = this;
-    DeviceMap = DisplayManager.GetDeviceMap();
+    ViewModel = new MainWindowViewModel(displayManager);
+    _displayManager = displayManager;
+    _deviceMap = _displayManager.GetDeviceMap();
+    var appWindow = GetAppWindowForCurrentWindow();
+    appWindow.Resize(new SizeInt32(825, 600));
+
+    _displayManager.LayoutsUpdated += (_, layouts) => { RefreshLayouts(layouts); };
+    _displayManager.LayoutLoaded += OnLayoutLoad;
+
+    ViewModel.SubscribeToSaveDialogRequested(DrawSaveDialog);
   }
+
+  public MainWindowViewModel ViewModel { get; set; }
 
   public ObservableCollection<string> Layouts { get; } = new();
-  public ObservableCollection<Settings> SelectedLayout { get; } = new();
 
-  private string SelectedLayoutName { get; set; } = "";
-
-  private async void Window_Loaded(object sender, RoutedEventArgs e)
+  private AppWindow GetAppWindowForCurrentWindow()
   {
-    await RefreshLayouts();
+    var hWnd = WindowNative.GetWindowHandle(this);
+    var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+    return AppWindow.GetFromWindowId(windowId);
   }
 
-  private async Task RefreshLayouts()
+  private async void Window_Activated(object sender, WindowActivatedEventArgs e)
+  {
+    if (_firstLoad)
+    {
+      _firstLoad = false;
+
+      _displayManager.FireLayoutUpdated();
+    }
+  }
+
+  private void RefreshLayouts(IList<string> layouts)
   {
     Layouts.Clear();
-    var enumerable = await DisplayManager.GetSavedLayouts(Path);
-    var layouts = enumerable.ToList();
 
     if (layouts.Count > 0)
     {
       LayoutsListBox.IsEnabled = true;
-      LayoutsTextBlock.IsEnabled = false;
+      LayoutsTextBlock.Visibility = Visibility.Collapsed;
       foreach (var layout in layouts)
         Layouts.Add(layout);
     }
     else
     {
       LayoutsListBox.IsEnabled = false;
-      LayoutsTextBlock.IsEnabled = true;
+      LayoutsTextBlock.Visibility = Visibility.Visible;
     }
   }
 
-  private async void LayoutsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+  private void OnLayoutLoad(object? sender, IList<Settings> data)
   {
-    var selectedItem = LayoutsListBox.SelectedItem;
-
-    if (selectedItem is string layout)
-    {
-      ApplyButton.IsEnabled = false;
-      SelectedLayoutName = layout;
-      SelectedLayout.Clear();
-      var data = await DisplayManager.LoadLayoutSettings(layout, Path);
-      foreach (var setting in data) SelectedLayout.Add(setting);
-      DrawLayout(data, LayoutCanvas);
-      ApplyButton.IsEnabled = true;
-    }
+    DrawLayout(data, LayoutCanvas);
   }
 
-  private void DrawLayout(IList<Settings> layout, Canvas canvas)
+  private void DrawLayout(IList<Settings> layout, Canvas canvas, double? scale = null)
   {
     canvas.Children.Clear();
 
     var canvasHeight = canvas.ActualHeight;
     var canvasWidth = canvas.ActualWidth;
+    if (canvasHeight == 0 || canvasWidth == 0)
+    {
+      canvas.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+      canvasHeight = canvas.DesiredSize.Height;
+      canvasWidth = canvas.DesiredSize.Width;
+    }
 
     var scalingFactor = 96.0 / 2;
+    if (scale is not null) scalingFactor = scale.Value;
 
     var leftMost = layout.MinBy(s => s.Position.X);
     var rightMost = layout.MaxBy(s => s.RightX);
@@ -105,16 +126,20 @@ public partial class MainWindow
 
   private FrameworkElement[] DrawMonitor(Settings settings, double offsetX, double offsetY, double scalingFactor)
   {
-    var strokeColor = settings.IsPrimary ? Brushes.Indigo : Brushes.Black;
+    var strokeColor = settings.IsPrimary ? Colors.Indigo : Colors.Black;
     var rect = new Rectangle
     {
-      Stroke = strokeColor,
-      Fill = Brushes.Transparent,
+      Stroke = new SolidColorBrush(strokeColor),
+      Fill = new SolidColorBrush(Colors.Transparent),
       StrokeThickness = 2,
       Width = settings.Resolution.Width / scalingFactor,
-      Height = settings.Resolution.Height / scalingFactor,
-      ToolTip = DeviceMap[settings.DeviceId]
+      Height = settings.Resolution.Height / scalingFactor
     };
+    var toolTip = new ToolTip
+    {
+      Content = _deviceMap[settings.DeviceId]
+    };
+    ToolTipService.SetToolTip(rect, toolTip);
 
     var rectLeft = settings.Position.X / scalingFactor + offsetX;
     var rectTop = settings.Position.Y / scalingFactor + offsetY;
@@ -155,38 +180,21 @@ public partial class MainWindow
     return resolutionTextBlock;
   }
 
-  private async void ApplyButton_Click(object sender, RoutedEventArgs e)
+  private async void DrawSaveDialog(object? sender, Layout currentLayout)
   {
-    await DisplayManager.ApplyConfig(SelectedLayoutName, Path);
-  }
-
-  private void SaveButton_Click(object sender, RoutedEventArgs e)
-  {
-    SavePopup.IsOpen = true;
-    var currentLayout = DisplayManager.GetCurrentLayout();
-    DrawLayout(currentLayout.Settings, PreviewCanvas);
-    PopupTextBox.Focus();
-  }
-
-  private async void PopupSaveButton_Click(object sender, RoutedEventArgs e)
-  {
-    await DisplayManager.SaveLayout(PopupTextBox.Text, Path);
-    await RefreshLayouts();
-    SavePopup.IsOpen = false;
-  }
-
-  private void PopupCancelButton_Click(object sender, RoutedEventArgs e)
-  {
-    SavePopup.IsOpen = false;
-  }
-
-  private void PopupTextBox_TextChanged(object sender, RoutedEventArgs e)
-  {
-    PopupSaveButton.IsEnabled = sender is TextBox tb && tb.Text.Length > 0;
-  }
-
-  private void PopupTextBox_KeyUp(object sender, KeyEventArgs e)
-  {
-    if (e.Key == Key.Enter) PopupSaveButton_Click(sender, e);
+    var content = new SaveDialogContent();
+    var cd = new ContentDialog
+    {
+      XamlRoot = RootGrid.XamlRoot,
+      Width = 300,
+      Height = 500,
+      Content = content,
+      CloseButtonText = "Cancel",
+      PrimaryButtonText = "Save",
+      PrimaryButtonCommand = ViewModel.SaveLayout,
+      PrimaryButtonCommandParameter = content.ViewModel.GetPopupTextValue()
+    };
+    DrawLayout(currentLayout.Settings, content.ViewModel.Canvas, 96.0 / 1.5);
+    await cd.ShowAsync();
   }
 }

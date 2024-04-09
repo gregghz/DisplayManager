@@ -1,31 +1,35 @@
-using System.IO;
-using System.Windows;
 using Gregghz.DisplayManager.UI.Cli;
-using Gregghz.DisplayManager.UI.Gui;
+using Gregghz.DisplayManager.Ui.Gui.Views;
+using Microsoft.UI.Xaml;
 
 namespace Gregghz.DisplayManager;
 
-public partial class App : Application
+public partial class App
 {
-  protected override void OnStartup(StartupEventArgs e)
+  public App()
   {
-    base.OnStartup(e);
+    InitializeComponent();
+  }
 
-    string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-    string path = Path.Combine(appDataPath, "DisplayManager");
+
+  protected override void OnLaunched(LaunchActivatedEventArgs args)
+  {
+    var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+    var path = Path.Combine(appDataPath, "DisplayManager");
     Directory.CreateDirectory(path);
+    var displayManager = new DisplayManager(path);
 
-    if (e.Args.Length == 0)
+    if (args.Arguments.Length == 0)
     {
-      var mainWindow = new MainWindow(path);
-      mainWindow.Show();
+      var mainWindow = new MainWindow(displayManager);
+      mainWindow.Activate();
     }
     else
     {
       // cli stuff
-      var console = new ConsoleMain(path);
-      console.Run(e.Args);
-      Current.Shutdown();
+      var console = new ConsoleMain(displayManager);
+      console.Run([args.Arguments]);
+      // Current.Shutdown();
     }
   }
 }

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DisplayManager (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "DisplayManager (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

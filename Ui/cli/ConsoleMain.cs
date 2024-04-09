@@ -3,7 +3,7 @@ using Gregghz.DisplayManager.UI.Cli.Model;
 
 namespace Gregghz.DisplayManager.UI.Cli;
 
-public class ConsoleMain(string path)
+public class ConsoleMain(DisplayManager displayManager)
 {
   public void Run(string[] args)
   {
@@ -19,7 +19,7 @@ public class ConsoleMain(string path)
   {
     if (opts.Info)
     {
-      DisplayManager.GetInfo();
+      displayManager.GetInfo();
       return;
     }
 
@@ -32,10 +32,10 @@ public class ConsoleMain(string path)
     switch (opts.ConfigToLoad, opts.ConfigToSave)
     {
       case (string, null):
-        await DisplayManager.ApplyConfig(opts.ConfigToLoad, path);
+        await displayManager.ApplyConfig(opts.ConfigToLoad);
         break;
       case (null, string):
-        await DisplayManager.SaveLayout(opts.ConfigToSave, path);
+        await displayManager.SaveLayout(opts.ConfigToSave);
         break;
       default:
         await Console.Error.WriteLineAsync("Invalid arguments.");
@@ -46,7 +46,7 @@ public class ConsoleMain(string path)
 
   private async Task ListLayouts()
   {
-    var files = await DisplayManager.GetSavedLayouts(path);
+    var files = await displayManager.GetSavedLayouts();
 
     foreach (var file in files) Console.WriteLine(file);
   }
