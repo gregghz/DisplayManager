@@ -1,9 +1,10 @@
 using CommandLine;
+using Gregghz.DisplayManager.Services;
 using Gregghz.DisplayManager.UI.Cli.Model;
 
 namespace Gregghz.DisplayManager.UI.Cli;
 
-public class ConsoleMain(DisplayManager displayManager)
+public class ConsoleMain(IDisplayService displayService, ILayoutService layoutService)
 {
   public void Run(string[] args)
   {
@@ -19,7 +20,8 @@ public class ConsoleMain(DisplayManager displayManager)
   {
     if (opts.Info)
     {
-      displayManager.GetInfo();
+      var result = displayService.GetMonitorInfo();
+      Console.WriteLine(result);
       return;
     }
 
@@ -31,11 +33,17 @@ public class ConsoleMain(DisplayManager displayManager)
 
     switch (opts.ConfigToLoad, opts.ConfigToSave)
     {
-      case (string, null):
-        await displayManager.ApplyConfig(opts.ConfigToLoad);
+      case (not null, null):
+        var layout = await layoutService.GetLayout(opts.ConfigToLoad);
+        if (layout is not null) await displayService.ApplyLayout(layout);
+        else
+          // @TODO: handle this
+          await Console.Error.WriteLineAsync($"{layout} does not exist.");
+
         break;
-      case (null, string):
-        await displayManager.SaveLayout(opts.ConfigToSave);
+      case (null, not null):
+        var currentLayout = displayService.GetDisplayLayout();
+        await layoutService.SaveLayout(opts.ConfigToSave, currentLayout);
         break;
       default:
         await Console.Error.WriteLineAsync("Invalid arguments.");
@@ -46,8 +54,8 @@ public class ConsoleMain(DisplayManager displayManager)
 
   private async Task ListLayouts()
   {
-    var files = await displayManager.GetSavedLayouts();
+    var layoutNames = await layoutService.GetSavedLayouts();
 
-    foreach (var file in files) Console.WriteLine(file);
+    foreach (var layoutName in layoutNames) Console.WriteLine(layoutName);
   }
 }

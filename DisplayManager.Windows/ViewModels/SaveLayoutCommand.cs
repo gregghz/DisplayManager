@@ -1,10 +1,9 @@
 using System.Windows.Input;
+using Gregghz.DisplayManager.Services;
 
-namespace Gregghz.DisplayManager.UI.Gui.ViewModels;
+namespace Gregghz.DisplayManager.Windows.ViewModels;
 
-public delegate string GetLayoutInput();
-
-public class SaveLayoutCommand(DisplayManager displayManager) : ICommand
+public class SaveLayoutCommand(IDisplayService displayService, ILayoutService layoutService) : ICommand
 {
   public bool CanExecute(object? parameter)
   {
@@ -13,12 +12,14 @@ public class SaveLayoutCommand(DisplayManager displayManager) : ICommand
 
   public async void Execute(object? parameter)
   {
-    if (parameter is GetLayoutInput getter)
-    {
-      var value = getter();
-      await displayManager.SaveLayout(value);
-    }
+    if (parameter is not Func<string> getter) return;
+
+    var value = getter();
+    var currentLayout = displayService.GetDisplayLayout();
+    await layoutService.SaveLayout(value, currentLayout);
+    LayoutSaved?.Invoke(this, EventArgs.Empty);
   }
 
   public event EventHandler? CanExecuteChanged;
+  public event EventHandler? LayoutSaved;
 }

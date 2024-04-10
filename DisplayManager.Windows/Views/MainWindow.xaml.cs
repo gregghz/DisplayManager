@@ -1,8 +1,8 @@
-using System.Collections.ObjectModel;
 using Windows.Graphics;
 using Gregghz.DisplayManager.Model;
-using Gregghz.DisplayManager.UI.Gui.ViewModels;
-using Gregghz.DisplayManager.UI.Gui.Views.Dialogs;
+using Gregghz.DisplayManager.Services;
+using Gregghz.DisplayManager.Windows.ViewModels;
+using Gregghz.DisplayManager.Windows.Views.Dialogs;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -21,29 +21,44 @@ namespace Gregghz.DisplayManager.Windows.Views;
 public partial class MainWindow : Window
 {
   private readonly Dictionary<string, string> _deviceMap;
-  private readonly DisplayManager _displayManager;
+  private readonly IDisplayService _displayService;
+  private readonly ILayoutService _layoutService;
 
   private bool _firstLoad = true;
 
-  public MainWindow(DisplayManager displayManager)
+  public MainWindow(IDisplayService displayService, ILayoutService layoutService)
   {
+    _displayService = displayService;
+    _layoutService = layoutService;
     InitializeComponent();
 
-    ViewModel = new MainWindowViewModel(displayManager);
-    _displayManager = displayManager;
-    _deviceMap = _displayManager.GetDeviceMap();
+    ViewModel = new MainWindowViewModel(displayService, layoutService);
+    _deviceMap = displayService.GetDeviceMap();
     var appWindow = GetAppWindowForCurrentWindow();
     appWindow.Resize(new SizeInt32(825, 600));
 
-    _displayManager.LayoutsUpdated += (_, layouts) => { RefreshLayouts(layouts); };
-    _displayManager.LayoutLoaded += OnLayoutLoad;
+    // _displayManager.LayoutsUpdated += (_, layouts) => { RefreshLayouts(layouts); };
+    // _displayManager.LayoutLoaded += OnLayoutLoad;
 
     ViewModel.SubscribeToSaveDialogRequested(DrawSaveDialog);
+    ViewModel.SubscribeToLayoutSelected(LayoutLoaded);
+    ViewModel.SubscribeToLayoutSaved(RefreshLayouts);
+    ViewModel.SubscribeToLayoutCountChanged(count =>
+    {
+      if (count > 0)
+      {
+        LayoutsListBox.IsEnabled = true;
+        LayoutsTextBlock.Visibility = Visibility.Collapsed;
+      }
+      else
+      {
+        LayoutsListBox.IsEnabled = false;
+        LayoutsTextBlock.Visibility = Visibility.Visible;
+      }
+    });
   }
 
   public MainWindowViewModel ViewModel { get; set; }
-
-  public ObservableCollection<string> Layouts { get; } = new();
 
   private AppWindow GetAppWindowForCurrentWindow()
   {
@@ -54,35 +69,21 @@ public partial class MainWindow : Window
 
   private async void Window_Activated(object sender, WindowActivatedEventArgs e)
   {
-    if (_firstLoad)
-    {
-      _firstLoad = false;
-
-      _displayManager.FireLayoutUpdated();
-    }
+    if (_firstLoad) _firstLoad = false;
+    // _displayManager.FireLayoutUpdated();
   }
 
   private void RefreshLayouts(IList<string> layouts)
   {
-    Layouts.Clear();
+    ViewModel.Layouts.Clear();
 
-    if (layouts.Count > 0)
-    {
-      LayoutsListBox.IsEnabled = true;
-      LayoutsTextBlock.Visibility = Visibility.Collapsed;
-      foreach (var layout in layouts)
-        Layouts.Add(layout);
-    }
-    else
-    {
-      LayoutsListBox.IsEnabled = false;
-      LayoutsTextBlock.Visibility = Visibility.Visible;
-    }
+    foreach (var layout in layouts)
+      ViewModel.Layouts.Add(layout);
   }
 
-  private void OnLayoutLoad(object? sender, IList<Settings> data)
+  private void LayoutLoaded(Layout layout)
   {
-    DrawLayout(data, LayoutCanvas);
+    DrawLayout(layout.Settings, LayoutCanvas);
   }
 
   private void DrawLayout(IList<Settings> layout, Canvas canvas, double? scale = null)
@@ -191,8 +192,8 @@ public partial class MainWindow : Window
       Content = content,
       CloseButtonText = "Cancel",
       PrimaryButtonText = "Save",
-      PrimaryButtonCommand = ViewModel.SaveLayout,
-      PrimaryButtonCommandParameter = content.ViewModel.GetPopupTextValue()
+      PrimaryButtonCommand = ViewModel.SaveLayoutCommand,
+      PrimaryButtonCommandParameter = () => content.ViewModel.LayoutName
     };
     DrawLayout(currentLayout.Settings, content.ViewModel.Canvas, 96.0 / 1.5);
     await cd.ShowAsync();

@@ -1,9 +1,10 @@
 using System.Windows.Input;
 using Gregghz.DisplayManager.Model;
+using Gregghz.DisplayManager.Services;
 
-namespace Gregghz.DisplayManager.UI.Gui.ViewModels;
+namespace Gregghz.DisplayManager.Windows.ViewModels;
 
-public class OpenSavePopupCommand(DisplayManager dm) : ICommand
+public class OpenSavePopupCommand(IDisplayService displayService) : ICommand
 {
   public bool CanExecute(object? parameter)
   {
@@ -12,7 +13,7 @@ public class OpenSavePopupCommand(DisplayManager dm) : ICommand
 
   public void Execute(object? parameter)
   {
-    var currentLayout = dm.GetCurrentLayout();
+    var currentLayout = displayService.GetDisplayLayout();
     SaveDialogRequested?.Invoke(this, currentLayout);
   }
 

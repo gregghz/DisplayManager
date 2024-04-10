@@ -2,39 +2,34 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Gregghz.DisplayManager.UI.Gui.ViewModels;
+namespace Gregghz.DisplayManager.Windows.ViewModels;
 
-public class SaveDialogViewModel : INotifyPropertyChanged
+public class SaveDialogViewModel(Canvas canvas) : INotifyPropertyChanged
 {
-  private Canvas _canvas;
-  private TextBox _textBox;
+  private string? _layoutName;
 
-  public Canvas Canvas
+  public string? LayoutName
   {
-    get => _canvas;
+    get => _layoutName;
     set
     {
-      _canvas = value;
+      if (_layoutName == value) return;
+      _layoutName = value;
       OnPropertyChanged();
     }
   }
 
-  public TextBox TextBox
+  public Canvas Canvas
   {
-    get => _textBox;
+    get => canvas;
     set
     {
-      _textBox = value;
+      canvas = value;
       OnPropertyChanged();
     }
   }
 
   public event PropertyChangedEventHandler? PropertyChanged;
-
-  public GetLayoutInput GetPopupTextValue()
-  {
-    return () => _textBox.Text;
-  }
 
   protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
   {

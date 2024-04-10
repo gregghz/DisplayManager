@@ -1,33 +1,15 @@
-using Windows.System;
-using Gregghz.DisplayManager.UI.Gui.ViewModels;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
+using Gregghz.DisplayManager.Windows.ViewModels;
 
-namespace Gregghz.DisplayManager.UI.Gui.Views.Dialogs;
+namespace Gregghz.DisplayManager.Windows.Views.Dialogs;
 
 public sealed partial class SaveDialogContent
 {
   public SaveDialogContent()
   {
     InitializeComponent();
-    ViewModel = new SaveDialogViewModel
-    {
-      Canvas = PreviewCanvas,
-      TextBox = PopupTextBox
-    };
+    ViewModel = new SaveDialogViewModel(PreviewCanvas);
     DataContext = ViewModel;
   }
 
   public SaveDialogViewModel ViewModel { get; set; }
-
-  private void PopupTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
-  {
-    if (e.Key == VirtualKey.Enter)
-    {
-    }
-  }
-
-  private void PopupTextBox_TextChanged(object sender, TextChangedEventArgs e)
-  {
-  }
 }

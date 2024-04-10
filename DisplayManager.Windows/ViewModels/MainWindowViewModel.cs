@@ -1,17 +1,39 @@
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Gregghz.DisplayManager.Model;
+using Gregghz.DisplayManager.Services;
 
-namespace Gregghz.DisplayManager.UI.Gui.ViewModels;
+namespace Gregghz.DisplayManager.Windows.ViewModels;
 
-public class MainWindowViewModel(DisplayManager dm) : INotifyPropertyChanged
+public class MainWindowViewModel : INotifyPropertyChanged
 {
-  public readonly ICommand ApplyLayoutCommand = new ApplyLayoutCommand(dm);
-  public readonly OpenSavePopupCommand OpenSavePopupCommand = new(dm);
-  public readonly ICommand SaveLayout = new SaveLayoutCommand(dm);
+  private readonly ILayoutService _layoutService;
+  public readonly ICommand ApplyLayoutCommand;
+  public readonly OpenSavePopupCommand OpenSavePopupCommand;
+  public readonly SaveLayoutCommand SaveLayoutCommand;
   private bool _applyEnabled;
   private string? _selectedLayout;
+
+  public MainWindowViewModel(IDisplayService displayService, ILayoutService layoutService)
+  {
+    _layoutService = layoutService;
+    ApplyLayoutCommand = new ApplyLayoutCommand(displayService, layoutService);
+    OpenSavePopupCommand = new OpenSavePopupCommand(displayService);
+    SaveLayoutCommand = new SaveLayoutCommand(displayService, layoutService);
+
+    Layouts.CollectionChanged += (_, args) =>
+    {
+      var newCount = args.NewItems?.Count ?? 0;
+      var oldCount = args.OldItems?.Count ?? 0;
+      if (newCount != oldCount) LayoutCountChanged?.Invoke(this, newCount);
+    };
+
+    PopulateLayouts();
+  }
+
+  public ObservableCollection<string> Layouts { get; } = new();
 
   public bool ApplyEnabled
   {
@@ -35,10 +57,7 @@ public class MainWindowViewModel(DisplayManager dm) : INotifyPropertyChanged
       {
         _selectedLayout = value;
         ApplyEnabled = value is not null;
-        if (value is not null)
-        {
-          var _ = dm.LoadLayoutSettings(value);
-        }
+        TriggerLayoutSelected();
 
         OnPropertyChanged();
       }
@@ -47,10 +66,41 @@ public class MainWindowViewModel(DisplayManager dm) : INotifyPropertyChanged
 
   public event PropertyChangedEventHandler? PropertyChanged;
 
-  public void RefreshLayouts()
+  private async void PopulateLayouts()
   {
-    var _ = dm.GetSavedLayouts();
+    var layouts = await _layoutService.GetSavedLayouts();
+    foreach (var layout in layouts) Layouts.Add(layout);
   }
+
+  private async void TriggerLayoutSelected()
+  {
+    if (_selectedLayout is null) return;
+    var layout = await _layoutService.GetLayout(_selectedLayout);
+    if (layout is not null) LayoutSelected?.Invoke(this, layout);
+  }
+
+  public void SubscribeToLayoutCountChanged(Action<int> onChanged)
+  {
+    LayoutCountChanged += (_, count) => onChanged(count);
+    onChanged(Layouts.Count);
+  }
+
+  public void SubscribeToLayoutSelected(Action<Layout> onSelected)
+  {
+    LayoutSelected += (_, layout) => onSelected(layout);
+  }
+
+  public void SubscribeToLayoutSaved(Action<IList<string>> onSaved)
+  {
+    SaveLayoutCommand.LayoutSaved += async (_, _) =>
+    {
+      var layouts = await _layoutService.GetSavedLayouts();
+      onSaved(layouts);
+    };
+  }
+
+  public event EventHandler<int>? LayoutCountChanged;
+  public event EventHandler<Layout>? LayoutSelected;
 
   public void SubscribeToSaveDialogRequested(EventHandler<Layout> handler)
   {

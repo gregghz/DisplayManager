@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisplayManager", "DisplayMa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisplayManager.Windows", "DisplayManager.Windows\DisplayManager.Windows.csproj", "{F258E3ED-BCD4-4D19-B65A-4F7965716EF4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisplayManager.Linux", "DisplayManager.Linux\DisplayManager.Linux.csproj", "{F4B3045B-F101-415A-ADF9-84CFE6EE6FA1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{F258E3ED-BCD4-4D19-B65A-4F7965716EF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F258E3ED-BCD4-4D19-B65A-4F7965716EF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F258E3ED-BCD4-4D19-B65A-4F7965716EF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4B3045B-F101-415A-ADF9-84CFE6EE6FA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4B3045B-F101-415A-ADF9-84CFE6EE6FA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4B3045B-F101-415A-ADF9-84CFE6EE6FA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4B3045B-F101-415A-ADF9-84CFE6EE6FA1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

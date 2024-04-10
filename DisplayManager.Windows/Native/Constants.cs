@@ -1,4 +1,4 @@
-namespace Gregghz.DisplayManager.Native;
+namespace Gregghz.DisplayManager.Windows.Native;
 
 public static class Constants
 {

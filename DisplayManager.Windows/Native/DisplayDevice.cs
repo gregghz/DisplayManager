@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Gregghz.DisplayManager.Native;
+namespace Gregghz.DisplayManager.Windows.Native;
 
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
 public struct DISPLAY_DEVICE

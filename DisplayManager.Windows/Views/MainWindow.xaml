@@ -24,7 +24,7 @@
                 <Grid>
                     <ListBox VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                              Name="LayoutsListBox"
-                             ItemsSource="{x:Bind Layouts}"
+                             ItemsSource="{x:Bind ViewModel.Layouts, Mode=OneWay}"
                              SelectedItem="{x:Bind ViewModel.SelectedLayout, Mode=TwoWay}" />
 
                     <TextBlock TextWrapping="Wrap" Name="LayoutsTextBlock" Padding="10"

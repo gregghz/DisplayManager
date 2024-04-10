@@ -1,4 +1,6 @@
+using Gregghz.DisplayManager.Services.Implementations;
 using Gregghz.DisplayManager.UI.Cli;
+using Gregghz.DisplayManager.Windows.Services.Implementations;
 using Gregghz.DisplayManager.Windows.Views;
 using Microsoft.UI.Xaml;
 
@@ -17,19 +19,22 @@ public partial class App
     var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
     var path = Path.Combine(appDataPath, "DisplayManager");
     Directory.CreateDirectory(path);
-    var displayManager = new DisplayManager(path);
+
+    // @TODO: DI
+    var layoutService = new FileSystemLayoutService(path);
+    var displayService = new WindowsDisplayService();
 
     var cliArgs = Environment.GetCommandLineArgs();
 
     if (cliArgs.Length == 0 || cliArgs[0].EndsWith(".dll"))
     {
-      var mainWindow = new MainWindow(displayManager);
+      var mainWindow = new MainWindow(displayService, layoutService);
       mainWindow.Activate();
     }
     else
     {
       // cli stuff
-      var console = new ConsoleMain(displayManager);
+      var console = new ConsoleMain(displayService, layoutService);
       console.Run(cliArgs);
       // Current.Shutdown();
     }
