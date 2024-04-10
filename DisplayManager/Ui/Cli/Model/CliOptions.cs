@@ -1,10 +1,10 @@
-namespace Gregghz.DisplayManager.UI.Cli.Model;
-
 using CommandLine;
+
+namespace Gregghz.DisplayManager.UI.Cli.Model;
 
 public class CliOptions
 {
-  [Option('l', "load", Required = false, HelpText = "Load a configuation with the given name.")]
+  [Option('o', "load", Required = false, HelpText = "Load a configuation with the given name.")]
   public string? ConfigToLoad { get; set; } = null;
 
   [Option('i', "info", Required = false, HelpText = "Display information.")]

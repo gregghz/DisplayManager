@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisplayManager.Windows", "D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisplayManager.Linux", "DisplayManager.Linux\DisplayManager.Linux.csproj", "{F4B3045B-F101-415A-ADF9-84CFE6EE6FA1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DispayManager.Mac", "DisplayManager.Mac\DispayManager.Mac.csproj", "{BB4A223B-8B62-4538-B4D8-F3C15EC48449}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{F4B3045B-F101-415A-ADF9-84CFE6EE6FA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4B3045B-F101-415A-ADF9-84CFE6EE6FA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4B3045B-F101-415A-ADF9-84CFE6EE6FA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB4A223B-8B62-4538-B4D8-F3C15EC48449}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB4A223B-8B62-4538-B4D8-F3C15EC48449}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB4A223B-8B62-4538-B4D8-F3C15EC48449}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB4A223B-8B62-4538-B4D8-F3C15EC48449}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
